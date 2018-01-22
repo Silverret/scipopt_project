@@ -1,0 +1,20 @@
+House       Nation          Boisson     Clopes      Animal
+Jaune       Norvegien                   Kools
+Bleu        Japonais        Lait        Cravens     Cheval
+Rouge       Anglais         Vin         gitanes     Renard
+Verte       Espagnol        Café        Chester     Chien
+Blanche     Ukrainien       Thé         Old golds   Escargot
+
+
+Maison      Nation          Boisson     Clopes      Animal
+Jaune       Norvegien                   Kools                                
+Bleu                                                Cheval
+Rouge       Anglais         Lait
+Vert                        Café
+Blanche     
+
+            Espagnol                                Chien
+            Ukrainien       Thé
+            Japonais                    Cravens
+                                        Old golds   Escargot
+                            Vin         gitanes
