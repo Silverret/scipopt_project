@@ -50,8 +50,8 @@ def lewis_caroll_zebra(positions, carac):
     m.addCons(x[0, 3, 4]==x[1, 4, 2])
     m.addCons(x[0, 3, 0]==x[1, 4, 4])
     for i in range(1, 4):
-        m.addCons(x[i, 3, 4]*(x[i+1, 4, 2] + x[i-1, 4, 2]) == x[i, 3, 4]) # Un voisin du fumeur de Chesterfields a un renard,
-        m.addCons(x[i, 3, 0]*(x[i+1, 4, 4] + x[i-1, 4, 4]) == x[i, 3, 0]) # Un voisin du fumeur de Kools a un cheval.
+        m.addCons(x[i, 3, 4] <= x[i+1, 4, 2] + x[i-1, 4, 2]) # Un voisin du fumeur de Chesterfields a un renard,
+        m.addCons(x[i, 3, 0] <= x[i+1, 4, 4] + x[i-1, 4, 4]) # Un voisin du fumeur de Kools a un cheval.
     
     m.addCons(x[4, 3, 4]==x[3, 4, 2])
     m.addCons(x[4, 3, 0]==x[3, 4, 4])
