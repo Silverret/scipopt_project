@@ -16,13 +16,15 @@ def read_inputs(n):
         grid = list(map(list, crossword_file.read().split("\n")))
 
     with open("./crossword_problem/words%s.txt" % str(n), "r") as words_file:
-        words = words_file.read().split("\n")
+        words = list(map(str.lower, words_file.read().split("\n")))
 
     return grid, words
 
 def find_segments(case, cases):
     """
     Function which find zero, one or two segments for the case (input)
+
+    :return [((1, 2), (2, 2); (3, 2)), ((2, 1), (2, 2), (2, 3))] for input = (2, 2)
     """
     i, j = case
 
@@ -48,37 +50,6 @@ def find_segments(case, cases):
 
     return segments
 
-def create_letter_word_set(case, cases, words):
-    first_seg_set = set()
-
-    segments = find_segments(case, cases)
-    assert len(segments) >= 1
-
-    seg = segments[0]
-    for k, word in enumerate(words):
-        if len(word) == len(seg):
-            first_seg_set.add((word[seg.index(case)], k))
-
-    if len(segments) == 1: # case n'est pas une intersection
-        return first_seg_set
-
-    assert len(segments) == 2 # case est une intersection
-    second_seg_set = set()
-    seg = segments[1]
-    for k, word in enumerate(words):
-        if len(word) == len(seg):
-            second_seg_set.add((word[seg.index(case)], k))
-
-    first_letter_set = {letter for letter, word in first_seg_set}
-    second_letter_set = {letter for letter, word in second_seg_set}
-
-    letters_set = first_letter_set.intersection(second_letter_set)
-
-    first_seg_set = {(letter, word) for (letter, word) in first_seg_set if letter in letters_set}
-    second_seg_set = {(letter, word) for (letter, word) in second_seg_set if letter in letters_set}
-
-    return first_seg_set.union(second_seg_set)
-
 def main(n):
     grid, words = read_inputs(n)
 
@@ -95,7 +66,7 @@ def main(n):
     # Modèle : les variables sont : cases + segments
     var = {}
     for case in cases:
-        var[case] = set(string.ascii_letters)
+        var[case] = set(string.ascii_lowercase)
     for seg in segments:
         var[seg] = {word for word in words if len(seg) == len(word)}
 
@@ -110,17 +81,17 @@ def main(n):
                 word_letter_set.add((word, word[i]))
             P.addConstraint(seg, case, word_letter_set)
 
-    # Résultats
     print("Let solve it !")
-    P.maintain_arc_consistency()
     dic_solve = P.solve()
 
+    # Résultats
     if dic_solve is None:
         print("No solution was found.")
         return
-
+    
+    # Print it !
     for var, value in dic_solve.items():
-        if len(var) == 2 and value in set(string.ascii_letters):
+        if len(var) == 2 and value in set(string.ascii_lowercase):
             i, j = var
             grid[i][j] = value
 
@@ -128,9 +99,9 @@ def main(n):
         for c in row:
             print(c, end='')
         print()
-    
+
     for var, value in dic_solve.items():
-        if not value in set(string.ascii_letters):
+        if not value in set(string.ascii_lowercase):
             print(value, var)
 
 
