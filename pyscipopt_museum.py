@@ -149,7 +149,7 @@ def create_model(small_radius, big_radius, small_price, big_price, locations):
                 continue
             if sd < big_radius**2 and k == 2: # distance < big_radius
                 pos_list.add((k, pos_index))
-            if sd < small_radius**2: # distance < small_radius
+            if sd < small_radius**2 and k == 1: # distance < small_radius
                 pos_list.add((k, pos_index))
         model.addCons(quicksum(x[k, pos_index] for (k, pos_index) in pos_list) >= 1)
 
@@ -165,7 +165,7 @@ def create_model(small_radius, big_radius, small_price, big_price, locations):
     return model
 
 if __name__ == '__main__':
-    N = 0
+    N = 9
     SMALL_RADIUS, BIG_RADIUS, SMALL_PRICE, BIG_PRICE, LOCATIONS, WIDTH, HEIGHT = read_input(N)
 
     print("Locations: ", len(LOCATIONS), ", Width: ", WIDTH, ", Height: ", HEIGHT)
@@ -177,6 +177,10 @@ if __name__ == '__main__':
     MODEL.optimize()
 
     # Print/Plot the result
+    with open('./museum_problem/sol_%s.txt' % N, 'w') as sol_file:
+        for var in MODEL.getVars():
+            if MODEL.getVal(var):
+                sol_file.write(var.name+"\n")
 
     loc_circles = []
     for loc in LOCATIONS:
