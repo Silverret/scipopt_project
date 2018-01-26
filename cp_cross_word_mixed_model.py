@@ -88,10 +88,10 @@ def main(n):
     if dic_solve is None:
         print("No solution was found.")
         return
-    
+
     # Print it !
     for var, value in dic_solve.items():
-        if len(var) == 2 and value in set(string.ascii_lowercase):
+        if value in set(string.ascii_lowercase):
             i, j = var
             grid[i][j] = value
 
