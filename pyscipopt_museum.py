@@ -15,14 +15,14 @@ def read_input(n):
     :return big_radius (int),
     :return small_price (int),
     :return big_price (int),
-    :return locations (list of tuple): for ex: [(4, 8), (1, 2)],
+    :return locations (set of tuple): for ex: [(4, 8), (1, 2)],
     :return width (int),
     :return height (int)
     """
     with open("./museum_problem/input_%s.txt" % str(n), "r") as file:
         small_radius, big_radius = tuple(map(int, file.readline().split(",")))
         small_price, big_price = tuple(map(int, file.readline().split(",")))
-        locations = [tuple(map(int, row.split(","))) for row in file.read().split("\n")]
+        locations = set(tuple(map(int, row.split(","))) for row in file.read().split("\n"))
 
         width = max(x[0] for x in locations)
         height = max(x[1] for x in locations)
@@ -45,9 +45,9 @@ def create_position_set(locations, small_radius, big_radius):
     :param locations
     :param small_radius
     :param big_radius
-    :return position_list : list of tuple (cam_type, x, y)
+    :return position_list : list of tuple (cam_type, pos_index(int), x, y)
     """
-    position_set = []
+    position_set = set()
     for loc_index, location1 in enumerate(locations):
         loc1_i, loc1_j = location1
         is_isolated = True
@@ -61,15 +61,15 @@ def create_position_set(locations, small_radius, big_radius):
             if sd < big_radius**2: # distance < big_radius
                 is_isolated = False
                 xa, ya, xb, yb = get_circle_centers(loc1_i, loc1_j, loc2_i, loc2_j, big_radius)
-                position_set.append((2, xa, ya)) # first center point
-                position_set.append((2, xb, yb)) # second center point
+                position_set.add((2, len(position_set), xa, ya)) # first center point
+                position_set.add((2, len(position_set), xb, yb)) # second center point
             if sd < small_radius**2: # distance < small_radius
                 is_isolated = False
                 xa, ya, xb, yb = get_circle_centers(loc1_i, loc1_j, loc2_i, loc2_j, small_radius)
-                position_set.append((1, xa, ya)) # first center point
-                position_set.append((1, xb, yb)) # second center point
+                position_set.add((1, len(position_set), xa, ya)) # first center point
+                position_set.add((1, len(position_set), xb, yb)) # second center point
         if is_isolated:
-            position_set.append((1, loc1_i, loc1_j))
+            position_set.add((1, len(position_set), loc1_i, loc1_j))
         if loc_index % 200 == 0:
             print("creating position_set for: ", loc_index)
 
@@ -131,8 +131,7 @@ def create_model(small_radius, big_radius, small_price, big_price, locations):
 
     position_set = create_position_set(locations, small_radius, big_radius)
 
-    for pos_index, pos in enumerate(position_set):
-        k, i, j = pos
+    for k, pos_index, i, j in position_set:
         name = str(k)+','+str(i)+','+str(j)
         x[k, pos_index] = model.addVar(name, vtype='B')
     print("Optimal position (ie variable number): ", len(position_set))
@@ -142,8 +141,7 @@ def create_model(small_radius, big_radius, small_price, big_price, locations):
     for loc_index, location in enumerate(locations):
         loc_i, loc_j = location
         pos_list = set()
-        for pos_index, pos in enumerate(position_set):
-            k, i, j = pos
+        for k, pos_index, i, j in position_set:
             sd = (i-loc_i)**2 + (j-loc_j)**2
             if sd > big_radius**2:
                 continue
@@ -159,7 +157,7 @@ def create_model(small_radius, big_radius, small_price, big_price, locations):
     # Cost function
     price = (0, small_price, big_price)
     model.setObjective(
-        quicksum(x[pos[0], pos_index]*price[pos[0]] for pos_index, pos in enumerate(position_set)),
+        quicksum(x[k, pos_index]*price[k] for k, pos_index, i, j in position_set),
         "minimize")
 
     return model
