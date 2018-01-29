@@ -163,7 +163,7 @@ def create_model(small_radius, big_radius, small_price, big_price, locations):
     return model
 
 if __name__ == '__main__':
-    N = 9
+    N = 0
     SMALL_RADIUS, BIG_RADIUS, SMALL_PRICE, BIG_PRICE, LOCATIONS, WIDTH, HEIGHT = read_input(N)
 
     print("Locations: ", len(LOCATIONS), ", Width: ", WIDTH, ", Height: ", HEIGHT)
