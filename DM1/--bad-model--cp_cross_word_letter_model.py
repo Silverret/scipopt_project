@@ -1,3 +1,11 @@
+"""
+This module implements our first model for the crossword problem : the primal one.
+
+Please see DM_1_Mots_Croisés.md for more details.
+
+Use the command below to launch it:
+python cp_cross_word_mixed_model <path_to_word_list> <path_to_grid>
+"""
 from collections import defaultdict
 import sys
 
