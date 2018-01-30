@@ -1,3 +1,11 @@
+"""
+This module implements our last model for the crossword problem : the dual one.
+
+Please see DM_1_Mots_Croisés.md for more details.
+
+Use the command below to launch it:
+python cp_cross_word_mixed_model <path_to_word_list> <path_to_grid>
+"""
 import sys
 
 from constraint_programming import constraint_programming as CSP
