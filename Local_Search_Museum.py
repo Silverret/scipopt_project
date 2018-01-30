@@ -50,8 +50,9 @@ class Museum:
                     sd = (loc1_i - loc2_i) ** 2 + (loc1_j - loc2_j) ** 2  # square distance between loc1 and loc2
                     if sd < self.big_radius ** 2:
                         xa, ya, xb, yb = self.get_circle_centers(loc1_i, loc1_j, loc2_i, loc2_j, self.big_radius)
-                        nb_covered_by_a = self.nb_arts_covered_with_a_cam(xa, ya, self.big_radius)
-                        nb_covered_by_b = self.nb_arts_covered_with_a_cam(xb, yb, self.big_radius)
+                        selected_loc=self.art_not_covered(new_positions)
+                        nb_covered_by_a = self.nb_arts_covered_with_a_cam(xa, ya, self.big_radius, selected_locations=selected_loc)
+                        nb_covered_by_b = self.nb_arts_covered_with_a_cam(xb, yb, self.big_radius, selected_locations=selected_loc)
                         if nb_covered_by_a >= nb_covered_by_b:
                             new_positions.append((2, xa, ya))
                         else:
@@ -71,8 +72,9 @@ class Museum:
                         continue
                     if sd < self.small_radius ** 2:
                         xa, ya, xb, yb = self.get_circle_centers(loc1_i, loc1_j, loc2_i, loc2_j, self.small_radius)
-                        nb_covered_by_a = self.nb_arts_covered_with_a_cam(xa, ya, self.small_radius)
-                        nb_covered_by_b = self.nb_arts_covered_with_a_cam(xb, yb, self.small_radius)
+                        selected_loc=self.art_not_covered(new_positions)
+                        nb_covered_by_a = self.nb_arts_covered_with_a_cam(xa, ya, self.small_radius, selected_locations=selected_loc)
+                        nb_covered_by_b = self.nb_arts_covered_with_a_cam(xb, yb, self.small_radius, selected_locations=selected_loc)
                         if nb_covered_by_a >= nb_covered_by_b:
                             new_positions.append((1, xa, ya))
                         else:
@@ -89,7 +91,7 @@ class Museum:
 
         return new_positions
 
-    def nb_arts_covered_with_a_cam(self, x_circle, y_circle, radius):
+    def nb_arts_covered_with_a_cam(self, x_circle, y_circle, radius, selected_locations=None):
 
         """
         Given a circle center coordonnate, and its radius, we retreive the number of cameras in its range
@@ -97,11 +99,14 @@ class Museum:
         :param x_circle: float
         :param y_circle: float
         :param radius: int
+        :param selected_locations: list of couples (i,j) of cameras
         :return: int
         """
         res = 0
         sq_radius = radius ** 2
-        for i, j in self.locations:
+        if selected_locations is None:
+            selected_locations=self.locations
+        for i, j in selected_locations:
             if (x_circle - i) ** 2 + (y_circle - j) ** 2 < sq_radius:
                 res += 1
         return res
@@ -171,7 +176,6 @@ class Museum:
             res += self.small_price if cam_type == 1 else self.big_price
         return res
 
-    # Unused
     def art_not_covered(self, selected_positions):
         """Return the list of uncovered art objects"""
         sq_small_radius = self.small_radius ** 2
