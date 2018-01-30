@@ -42,17 +42,19 @@ class Museum:
         while not self.all_covered(new_positions):
             if not no_more_big_radius:
                 big_radius_remaining = False
-                for (loc1_i, loc1_j), (loc2_i, loc2_j) in combinations(
-                        self.art_not_covered(new_positions),
-                        2):
+                combi = list(combinations(self.art_not_covered(new_positions), 2))
+                len_combi = len(combi)
+                for (loc1_i, loc1_j), (loc2_i, loc2_j) in random.sample(combi, len_combi):
                     if (loc1_i, loc1_j) == (loc2_i, loc2_j):
                         continue
                     sd = (loc1_i - loc2_i) ** 2 + (loc1_j - loc2_j) ** 2  # square distance between loc1 and loc2
                     if sd < self.big_radius ** 2:
                         xa, ya, xb, yb = self.get_circle_centers(loc1_i, loc1_j, loc2_i, loc2_j, self.big_radius)
-                        selected_loc=self.art_not_covered(new_positions)
-                        nb_covered_by_a = self.nb_arts_covered_with_a_cam(xa, ya, self.big_radius, selected_locations=selected_loc)
-                        nb_covered_by_b = self.nb_arts_covered_with_a_cam(xb, yb, self.big_radius, selected_locations=selected_loc)
+                        selected_loc = self.art_not_covered(new_positions)
+                        nb_covered_by_a = self.nb_arts_covered_with_a_cam(xa, ya, self.big_radius,
+                                                                          selected_locations=selected_loc)
+                        nb_covered_by_b = self.nb_arts_covered_with_a_cam(xb, yb, self.big_radius,
+                                                                          selected_locations=selected_loc)
                         if nb_covered_by_a >= nb_covered_by_b:
                             new_positions.append((2, xa, ya))
                         else:
@@ -65,16 +67,19 @@ class Museum:
 
             if no_more_big_radius and not no_more_small_radius:
                 small_radius_remaining = False
-                for (loc1_i, loc1_j), (loc2_i, loc2_j) in combinations(
-                        self.art_not_covered(new_positions), 2):
+                combi = list(combinations(self.art_not_covered(new_positions), 2))
+                len_combi = len(combi)
+                for (loc1_i, loc1_j), (loc2_i, loc2_j) in random.sample(combi, len_combi):
                     sd = (loc1_i - loc2_i) ** 2 + (loc1_j - loc2_j) ** 2  # square distance between loc1 and loc2
                     if (loc1_i, loc1_j) == (loc2_i, loc2_j):
                         continue
                     if sd < self.small_radius ** 2:
                         xa, ya, xb, yb = self.get_circle_centers(loc1_i, loc1_j, loc2_i, loc2_j, self.small_radius)
-                        selected_loc=self.art_not_covered(new_positions)
-                        nb_covered_by_a = self.nb_arts_covered_with_a_cam(xa, ya, self.small_radius, selected_locations=selected_loc)
-                        nb_covered_by_b = self.nb_arts_covered_with_a_cam(xb, yb, self.small_radius, selected_locations=selected_loc)
+                        selected_loc = self.art_not_covered(new_positions)
+                        nb_covered_by_a = self.nb_arts_covered_with_a_cam(xa, ya, self.small_radius,
+                                                                          selected_locations=selected_loc)
+                        nb_covered_by_b = self.nb_arts_covered_with_a_cam(xb, yb, self.small_radius,
+                                                                          selected_locations=selected_loc)
                         if nb_covered_by_a >= nb_covered_by_b:
                             new_positions.append((1, xa, ya))
                         else:
@@ -105,7 +110,7 @@ class Museum:
         res = 0
         sq_radius = radius ** 2
         if selected_locations is None:
-            selected_locations=self.locations
+            selected_locations = self.locations
         for i, j in selected_locations:
             if (x_circle - i) ** 2 + (y_circle - j) ** 2 < sq_radius:
                 res += 1
@@ -220,8 +225,6 @@ class Museum:
         fig.savefig('./museum_problem/plot_sol_1.png')
         print("Optimal value: %f" % self.selection_cost(cam_positions))
         plot.show()
-
-
 
     ###########################################################################################
     ################################ To be refactored #########################################
