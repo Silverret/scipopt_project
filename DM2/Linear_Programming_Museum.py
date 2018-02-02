@@ -182,7 +182,7 @@ if __name__ == '__main__':
     MODEL.optimize()
 
     # Print/Plot the result
-    with open('output.txt', 'w') as sol_file:
+    with open('LP_output.txt', 'w') as sol_file:
         for var in MODEL.getVars():
             if MODEL.getVal(var):
                 sol_file.write(var.name+"\n")
@@ -215,6 +215,6 @@ if __name__ == '__main__':
         ax.add_artist(cam_circle)
 
     plot.grid(True)
-    fig.savefig('output.png')
+    fig.savefig('LP_output.png')
     print("Optimal value: %f" % MODEL.getObjVal())
     plot.show()
