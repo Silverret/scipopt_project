@@ -1,7 +1,7 @@
 """
 This module implements our local search model for the museum problem.
 
-Please see DM_2_Exposition_Au_Musée.md for more details.
+Please read DM_2_Exposition_Au_Musée.md for more details.
 
 Use the command below to launch it:
 python Local_Search_Museum.py <path_to_input>
@@ -10,12 +10,16 @@ import math
 import random
 import sys
 from itertools import combinations
+from collections import defaultdict
 
 import matplotlib.pyplot as plot
 
 
 class Museum:
     def __init__(self):
+        """
+        Load the problem from a given input file.
+        """
         with open(sys.argv[1], "r") as file:
             self.small_radius, self.big_radius = tuple(map(int, file.readline().split(",")))
             self.small_price, self.big_price = tuple(map(int, file.readline().split(",")))
@@ -108,7 +112,7 @@ class Museum:
     def nb_arts_covered_with_a_cam(self, x_circle, y_circle, radius, selected_locations=None):
 
         """
-        Given a circle center coordonnate, and its radius, we retreive the number of cameras in its range
+        Given a circle center coordonnate, and its radius, we retrieve the number of cameras in its range
 
         :param x_circle: float
         :param y_circle: float
@@ -171,10 +175,25 @@ class Museum:
 
         return xa, ya, xb, yb
 
-    def all_covered(self, selected_positions):
+    def all_covered(self, selected_positions, local_neighbour=None):
+        """
+        True if all art objects are covered, False otherwise.
+
+        :param selected_positions: list of cameras' position to test
+        :return: boolean
+        """
         sq_small_radius = self.small_radius ** 2
         sq_big_radius = self.big_radius ** 2
-        for x_art, y_art in self.locations:
+
+        box_size = 20
+
+        if local_neighbour is None:
+            cam_locations = self.locations
+        else:
+            x_0, y_0 = local_neighbour
+            cam_locations = filter(lambda x: (x_0 - box_size / 2 <= x[0] < x_0 + box_size / 2) and (
+                y_0 - box_size / 2 <= x[1] < y_0 + box_size / 2), self.locations)
+        for x_art, y_art in cam_locations:
             if any((x_art - x_cam) ** 2 + (y_art - y_cam) ** 2 <= (sq_small_radius if cam_type == 1 else sq_big_radius)
                    for
                    cam_type, x_cam, y_cam in selected_positions):
@@ -184,14 +203,24 @@ class Museum:
         return True
 
     def selection_cost(self, selected_positions):
-        """Retrieve the cost of a given collections of cameras' positions"""
+        """
+        Retrieve the cost of a given collections of cameras' positions
+
+        :param selected_positions: list of cameras' position to test
+        :return: (int)
+        """
         res = 0
         for cam_type, x_cam, y_cam in selected_positions:
             res += self.small_price if cam_type == 1 else self.big_price
         return res
 
     def art_not_covered(self, selected_positions):
-        """Return the list of uncovered art objects"""
+        """Return the list of uncovered art objects
+
+        :param selected_positions: list of cameras' position to test
+        :return: (list)
+
+        """
         sq_small_radius = self.small_radius ** 2
         sq_big_radius = self.big_radius ** 2
         res = []
@@ -204,8 +233,86 @@ class Museum:
                 res.append((x_art, y_art))
         return res
 
+    def camera_redundancy(self, positions):
+        """ From a given list of cameras'positions, Retrieve by how many cameras each art object is covered
+
+        :param positions: list of cameras' positions
+        :return: dict[art_object]=n_cameras_covering_it
+        """
+
+        result = defaultdict(int)
+
+        sq_small_radius = self.small_radius ** 2
+        sq_big_radius = self.big_radius ** 2
+        for x_art, y_art in self.locations:
+            result[x_art, y_art] = sum(
+                (x_art - x_cam) ** 2 + (y_art - y_cam) ** 2 <= (sq_small_radius if cam_type == 1 else sq_big_radius)
+                for cam_type, x_cam, y_cam in positions)
+        return result
+
+    def improve(self, current_positions):
+        """ From a given list of cameras'position, retrieve a possible better camera's configuration
+
+        :param current_positions: list of cameras'position
+        :return: new list of cameras'position
+        """
+        current_score = self.selection_cost(current_positions)
+
+        new_positions = list(current_positions)
+        # Improvements
+
+        # Remove small cam in big cam radius
+        for small_type, x_small, y_small in filter(lambda x: x[0] == 1, current_positions):
+            for big_type, x_big, y_big in filter(lambda x: x[0] == 2, current_positions):
+                if math.sqrt((x_small - x_big) ** 2 + (y_small - y_big) ** 2) + self.small_radius <= self.big_radius:
+                    new_positions.remove((small_type, x_small, y_small))
+        score_1 = self.selection_cost(new_positions)
+        print("With the rid of small cameras in bigger ones : {} score".format(score_1 - current_score))
+
+        # Find redundant cameras
+        for camera in new_positions:
+            reduced_positions = list(new_positions)
+            reduced_positions.remove(camera)
+            if self.all_covered(reduced_positions, local_neighbour=camera[1:]):
+                new_positions = reduced_positions
+
+        score_2 = self.selection_cost(new_positions)
+        print("WIth the rid of redundant cameras : {} score".format(score_2 - score_1))
+
+        return new_positions
+
+    def local_min(self, current_positions):
+        """ Compute the local minimum of a given camera's positions
+
+        :param current_positions: list of cameras'position
+        :return: current_positions : list
+        """
+
+        new_positions = self.improve(current_positions)
+
+        while self.selection_cost(current_positions) > self.selection_cost(new_positions):
+            current_positions = new_positions
+            new_positions = self.improve(current_positions)
+
+        return current_positions
+
+    def solve(self):
+        """ Solve the problem of optimization, using a minimum local search.
+        Plot the result
+
+        :return: None
+        """
+        current_positions = self.first_cam_positions_split()
+        optimal_positions = self.local_min(current_positions)
+        self.plot_solution(optimal_positions)
+
     def plot_solution(self, cam_positions):
-        """Print/Plot the result"""
+        """Print/Plot the result
+
+        :param selected_positions: list of cameras' position to test
+        :return: None
+
+        """
 
         loc_circles = []
         for loc in self.locations:
@@ -231,76 +338,8 @@ class Museum:
             ax.add_artist(cam_circle)
 
         plot.grid(True)
-        fig.savefig('./museum_problem/plot_sol_1.png')
         print("Optimal value: %f" % self.selection_cost(cam_positions))
         plot.show()
-
-    ###########################################################################################
-    ################################ To be refactored #########################################
-    ###########################################################################################
-
-
-
-
-    def cover_uncovered_art(self, selected_positions):
-        new_selected_positions = set(selected_positions)
-        locations_to_cover = self.art_not_covered(selected_positions)
-        new_positions = self.cam_positions(locations_to_cover)  # TODO pas optimal
-        for pos in new_positions:
-            new_selected_positions.add(pos)
-        return new_selected_positions
-
-    def improve(self, selected_positions):
-        """ Deux améliorations possibles, couvrirent les objets d'arts non couverts
-        et mutualiser les caméras des objets d'arts couverts plusieurs fois"""
-
-        new_selected_positions = set(selected_positions)
-
-        # Ensure that all object arts are covered
-        if not self.all_covered(new_selected_positions):
-            new_selected_positions = self.cover_uncovered_art(new_selected_positions)
-
-        # Improvements
-
-        # Remove small cam in big cam radius
-        for small_type, x_small, y_small in filter(lambda x: x[0] == 1, new_selected_positions):
-            for big_type, x_big, y_big in filter(lambda x: x[0] == 2, new_selected_positions):
-                if math.sqrt((x_small - x_big) ** 2 + (y_small - y_big) ** 2) + self.small_radius <= self.big_radius:
-                    new_selected_positions.remove((small_type, x_small, y_small))
-
-        # Prefer a small radius to a big one if less than 4 art objects are covered
-        for big_type, x_big, y_big in new_selected_positions:
-            if big_type == 2:
-                nb_art_covered = 0
-                for x_art, y_art in self.locations:
-                    if (x_art - x_big) ** 2 + (y_art - y_big) ** 2 <= self.big_radius ** 2:
-                        nb_art_covered += 1
-                if nb_art_covered < 4:
-                    new_selected_positions.remove((big_type, x_big, y_big))
-                    if not self.all_covered(new_selected_positions):
-                        new_selected_positions = self.cover_uncovered_art(new_selected_positions)
-
-        return new_selected_positions
-
-    def localmin(self, selected_positions):
-        new_selected_positions = self.improve(selected_positions)
-        while selected_positions != new_selected_positions:
-            if self.selection_cost(selected_positions) > self.selection_cost(new_selected_positions):
-                selected_positions = new_selected_positions
-            new_selected_positions = self.improve(selected_positions)
-            print('new_selected_positions')
-        return selected_positions
-
-    def solve(self):
-        result_pool = []
-        i = 0
-        while i <= 5:
-            random_positions = {pos for pos in POSITIONS if random.randint(0, 1)}
-            selected_positions = self.localmin(random_positions)
-            result_pool.append((selected_positions, self.selection_cost(selected_positions)))
-            i += 1
-        best_solution = min(result_pool, key=lambda x: x[1])
-        self.plot_solution(best_solution[0])
 
 
 class SubMuseum(Museum):
@@ -311,5 +350,4 @@ class SubMuseum(Museum):
 
 if __name__ == '__main__':
     problem = Museum()
-    positions = problem.first_cam_positions_split()
-    problem.plot_solution(positions)
+    problem.solve()
