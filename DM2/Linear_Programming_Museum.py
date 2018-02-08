@@ -1,7 +1,7 @@
 """
 This module implements our linear programming model for the museum problem.
 
-Please see DM_2_Exposition_Au_Musée.md for more details.
+Please read DM_2_Exposition_Au_Musée.md for more details.
 
 Use the command below to launch it:
 python Local_Search_Museum.py <path_to_input>
