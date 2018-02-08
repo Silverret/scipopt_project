@@ -1,5 +1,7 @@
 """
 This module implements our linear programming model for the museum problem.
+The set of variables is obtained by finding the centers of
+the circle passing through at least 2 locations
 
 Please read DM_2_Exposition_Au_Musée.md for more details.
 

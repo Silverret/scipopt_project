@@ -1,5 +1,6 @@
 """
 This module implements our linear programming model for the museum problem.
+The set of variables is a square mesh here;
 
 Please see DM_2_Exposition_Au_Musée.md for more details.
 
@@ -37,6 +38,12 @@ def read_input():
     return small_radius, big_radius, small_price, big_price, locations, width, height
 
 def create_position_set(locations, small_radius, big_radius, width, height):
+    """
+    Create a square mesh of variables.
+    The mesh size is 1 (ie there is a variable for every integer coordinates)
+
+    We don't create the variables too far from the nearest location to lighten the model.
+    """
     position_set = set()
     for loc_x, loc_y in locations:
         for i in range(max(0, loc_x-small_radius), min(height, loc_x+1+small_radius)):
