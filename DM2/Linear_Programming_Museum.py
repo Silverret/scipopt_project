@@ -116,11 +116,11 @@ def get_circle_centers(x1, y1, x2, y2, r):
 
     return xa, ya, xb, yb
 
-
-def create_model(small_radius, big_radius, small_price, big_price, locations):
+def create_model(position_set, small_radius, big_radius, small_price, big_price, locations):
     """
     Create the model
 
+    :param position_set (set of tuple): (cam_type, pos_index(int), x, y)
     :param small_radius (int),
     :param big_radius (int),
     :param small_price (int),
@@ -136,8 +136,6 @@ def create_model(small_radius, big_radius, small_price, big_price, locations):
     # Variables : a binary variable for every locations and camera types
     # For now, we get the half integer location
     x = {}
-
-    position_set = create_position_set(locations, small_radius, big_radius)
 
     for k, pos_index, i, j in position_set:
         name = str(k)+','+str(i)+','+str(j)
@@ -175,7 +173,9 @@ if __name__ == '__main__':
 
     print("Locations: ", len(LOCATIONS), ", Width: ", WIDTH, ", Height: ", HEIGHT)
 
-    MODEL = create_model(SMALL_RADIUS, BIG_RADIUS, SMALL_PRICE, BIG_PRICE, LOCATIONS)
+    POSITION_SET = create_position_set(LOCATIONS, SMALL_RADIUS, BIG_RADIUS)
+    import pdb; pdb.set_trace()
+    MODEL = create_model(POSITION_SET, SMALL_RADIUS, BIG_RADIUS, SMALL_PRICE, BIG_PRICE, LOCATIONS)
 
     print("Model created. Let solve it.")
     MODEL.hideOutput()
