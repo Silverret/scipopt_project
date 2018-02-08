@@ -6,7 +6,7 @@ par Silvestre Perret et Mathieu Seris
 Nous avons essayé plusieurs approches pour résoudre ce problème:
 
 ## Résolution par programmation linéaire
-Variables :
+###Variables :
 Nos variables sont les emplacements des caméras dans le musée. Nous créons un ensemble (fini) de positions possibles pour les caméras et nous associons à chaque position deux variables booléennes (une par type de caméra) qui indiquent si oui ou non une caméra (petite ou grande) est installée sur cette position.
 
 Nous avons essayé plusieurs ensembles de positions possibles pour résoudre le problème.
